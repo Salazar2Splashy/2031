@@ -77,4 +77,4 @@ def account():
                            email="PLACEHOLDER FOR USER EMAIL",
                            firstname="PLACEHOLDER FOR USER FIRSTNAME",
                            lastname="PLACEHOLDER FOR USER LASTNAME",
-                           phone="PLACEHOLDER FOR USER PHONE")
+                           phone="PLACEHOLDER FOR USER PHONE"),
