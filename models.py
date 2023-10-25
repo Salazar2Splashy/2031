@@ -18,12 +18,13 @@ class User(db.Model, UserMixin):
     phone = db.Column(db.String(100), nullable=False)
     role = db.Column(db.String(100), nullable=False, default='user')
     dob = db.Column(db.String(10), nullable=False)
+    postcode = db.Column(db.String(7), nullable=False)
 
     # Define the relationship to Draw
     draws = db.relationship('Draw')
     pin_key = db.Column(db.String(32), nullable=False, default=pyotp.random_base32())
 
-    def __init__(self, email, firstname, lastname, phone, password, role, dob):
+    def __init__(self, email, firstname, lastname, phone, password, role, dob, postcode):
         self.email = email
         self.firstname = firstname
         self.lastname = lastname
@@ -31,6 +32,7 @@ class User(db.Model, UserMixin):
         self.password = password
         self.role = role
         self.dob = dob
+        self.postcode = postcode
 
     def get_2fa_uri(self):
         return str(pyotp.totp.TOTP(self.pin_key).provisioning_uri(
@@ -81,7 +83,8 @@ def init_db():
                      lastname='Jones',
                      phone='0191-123-4567',
                      role='admin',
-                     dob="01/01/2000")
+                     dob="01/01/2000",
+                     postcode="NE6 5SU")
 
         db.session.add(admin)
         db.session.commit()
