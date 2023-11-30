@@ -40,6 +40,9 @@ class User(db.Model, UserMixin):
             issuer_name='CSC2031 Blog Arbitrary Name')
         )
 
+    def verify_password(self, password):
+        return self.password == password
+
 
 class Draw(db.Model):
     __tablename__ = 'draws'
