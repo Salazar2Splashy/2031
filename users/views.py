@@ -66,14 +66,15 @@ def login():
         if not user or not user.verify_password(form.password.data) or not user.verify_pin(form.pin.data):
             session['authentication_attempts'] += 1
             if session.get('authentication_attempts') >= 3:
-                flash(Markup('Number of incorrect login attempts exceeded. Please click <a href = "/reset" > here < / a > to reset.'))
+                flash(Markup('Number of incorrect login attempts exceeded. Please click <a href = "/reset" > here < / '
+                             'a > to reset.'))
                 return render_template('users/login.html')
             flash('Email address, password or pin is incorrect. {} login attempts remaining'.format(3 - session.get('authentication_attempts')), 'error')
             return render_template('users/login.html', form=form)
         login_user(user)
         session['authentication_attempts'] = 0
         # sends user to index page
-        return redirect(url_for('index'))
+        return redirect(url_for('main.index'))
     else:
         flash_errors(form)
 
