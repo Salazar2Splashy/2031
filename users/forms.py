@@ -3,6 +3,7 @@ from wtforms import StringField, SubmitField, PasswordField, validators
 from wtforms.validators import Email, ValidationError, Regexp, Length, EqualTo, DataRequired
 import re
 from flask_wtf import RecaptchaField
+import pyotp
 
 
 def character_check(form, field):
@@ -64,6 +65,7 @@ class LoginForm(FlaskForm):
     password = PasswordField(
         validators=[Length(min=6, max=12, message="Password must be 6-12 characters long"), password_check,
                     DataRequired(message="Field cannot be blank")])
+    postcode = StringField(validators=[postcode_check, DataRequired(message="Field cannot be blank")])
     pin = StringField(
         validators=[
             DataRequired(message="Field cannot be blank")])

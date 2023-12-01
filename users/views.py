@@ -5,7 +5,7 @@ from markupsafe import Markup
 from app import db
 from models import User
 from users.forms import RegisterForm, LoginForm
-from flask_login import login_user
+from flask_login import login_user, logout_user
 
 # CONFIG
 users_blueprint = Blueprint('users', __name__, template_folder='templates')
@@ -48,6 +48,7 @@ def register():
         db.session.commit()
 
         session["email"] = new_user.email
+        session['authentication_attempts'] = 0
         # sends user to login page
         return redirect(url_for('users.setup_2fa'))
     else:
@@ -58,12 +59,14 @@ def register():
 
 
 # view user login
-@users_blueprint.route('/login')
+@users_blueprint.route('/login',methods=['GET', 'POST',])
 def login():
+    if not session.get('authentication_attempts'):
+        session['authentication_attempts'] = 0
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first();
-        if not user or not user.verify_password(form.password.data) or not user.verify_pin(form.pin.data):
+        if not user or not user.verify_password(form.password.data) or not user.verify_pin(form.pin.data) or not user.verify_postcode(form.postcode.data):
             session['authentication_attempts'] += 1
             if session.get('authentication_attempts') >= 3:
                 flash(Markup('Number of incorrect login attempts exceeded. Please click <a href = "/reset" > here < / '
@@ -74,10 +77,9 @@ def login():
         login_user(user)
         session['authentication_attempts'] = 0
         # sends user to index page
-        return redirect(url_for('main.index'))
+        return redirect(url_for('index'))
     else:
         flash_errors(form)
-
     # if request method is GET or form not valid re-render signup page
     return render_template('users/login.html', form=form)
 
@@ -85,10 +87,10 @@ def login():
 @users_blueprint.route('/setup_2fa')
 def setup_2fa():
     if 'email' not in session:
-        return redirect(url_for('main.index'))
+        return redirect(url_for('index'))
     user = User.query.filter_by(email=session['email']).first()
     if not user:
-        return redirect(url_for('main.index'))
+        return redirect(url_for('index'))
     del session['email']
     return render_template('users/setup_2fa.html', email=user.email, uri=user.get_2fa_uri())
 
@@ -109,3 +111,8 @@ def reset():
     session['authentication_attempts'] = 0
     return redirect(url_for('users.login'))
 
+
+@users_blueprint.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
