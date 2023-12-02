@@ -103,11 +103,14 @@ def setup_2fa():
 @login_required
 def account():
     return render_template('users/account.html',
-                           acc_no="PLACEHOLDER FOR USER ID",
-                           email="PLACEHOLDER FOR USER EMAIL",
-                           firstname="PLACEHOLDER FOR USER FIRSTNAME",
-                           lastname="PLACEHOLDER FOR USER LASTNAME",
-                           phone="PLACEHOLDER FOR USER PHONE"),
+                           acc_no=current_user.id,
+                           email=current_user.email,
+                           firstname=current_user.firstname,
+                           lastname=current_user.lastname,
+                           phone=current_user.phone,
+                           Postcode=current_user.postcode,
+                           DOB=current_user.dob,
+                           Role=current_user.role),
 
 
 @users_blueprint.route('/reset')
