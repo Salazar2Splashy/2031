@@ -4,7 +4,7 @@ from markupsafe import Markup
 
 from app import db
 from models import User
-from users.forms import RegisterForm, LoginForm
+from users.forms import RegisterForm, LoginForm, PasswordForm
 from flask_login import login_user, logout_user, login_required, current_user
 
 # CONFIG
@@ -98,6 +98,26 @@ def setup_2fa():
     return render_template('users/setup_2fa.html', email=user.email, uri=user.get_2fa_uri())
 
 
+@users_blueprint.route('/update_password', methods=['GET', 'POST'])
+@login_required
+def update_password():
+    form = PasswordForm()
+
+    if form.validate_on_submit():
+
+        if not current_user or not current_user.verify_password(form.current_password.data):
+            flash('Incorrect current password', 'error')
+            return render_template('users/update_password.html', form=form)
+
+        current_user.password = form.new_password.data
+        db.session.commit()
+        flash('Password changed successfully')
+
+        return redirect(url_for('users.account'))
+
+    return render_template('users/update_password.html', form=form)
+
+
 # view user account
 @users_blueprint.route('/account')
 @login_required
@@ -108,9 +128,9 @@ def account():
                            firstname=current_user.firstname,
                            lastname=current_user.lastname,
                            phone=current_user.phone,
-                           Postcode=current_user.postcode,
-                           DOB=current_user.dob,
-                           Role=current_user.role),
+                           role=current_user.role,
+                           dob=current_user.dob,
+                           postcode=current_user.postcode)
 
 
 @users_blueprint.route('/reset')

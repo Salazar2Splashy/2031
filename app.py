@@ -25,6 +25,19 @@ db = SQLAlchemy(app)
 qrcode = QRcode(app)
 
 
+def requires_roles(*roles):
+    def wrapper(f):
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            if current_user.role not in roles:
+                return render_template('errors/403.html')
+            return f(*args, **kwargs)
+
+        return wrapped
+
+    return wrapper
+
+
 # HOME PAGE VIEW
 @app.route('/')
 def index():
@@ -82,16 +95,3 @@ def load_user(id):
 
 if __name__ == "__main__":
     app.run()
-
-
-def requires_roles(*roles):
-    def wrapper(f):
-        @wraps(f)
-        def wrapped(*args, **kwargs):
-            if current_user.role not in roles:
-                return render_template('errors/403.html')
-            return f(*args, **kwargs)
-
-        return wrapped
-
-    return wrapper

@@ -1,11 +1,12 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, validators
+from wtforms import StringField, SubmitField, PasswordField, validators, BooleanField
 from wtforms.validators import Email, ValidationError, Regexp, Length, EqualTo, DataRequired
 import re
 from flask_wtf import RecaptchaField
 import pyotp
 
 
+    
 def character_check(form, field):
     excluded_characters = "*?!'^+%&/()=}][{$#@<>"
     for char in field.data:
@@ -71,3 +72,14 @@ class LoginForm(FlaskForm):
             DataRequired(message="Field cannot be blank")])
     recaptcha = RecaptchaField()
     submit = SubmitField()
+
+
+class PasswordForm(FlaskForm):
+    current_password = PasswordField(id='password', validators=[DataRequired()])
+    show_password = BooleanField('Show password', id='check')
+    new_password = PasswordField(
+        validators=[Length(min=6, max=12, message="Password must be 6-12 characters long"), password_check,
+                    DataRequired(message="Field cannot be blank")])
+    confirm_new_password = PasswordField(
+        validators=[DataRequired(), EqualTo('new_password', message='Both new password fields must be equal')])
+    submit = SubmitField('Change Password')
