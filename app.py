@@ -1,10 +1,11 @@
 # IMPORTS
 import os
+from functools import wraps
+
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_qrcode import QRcode
-from flask_login import LoginManager
-
+from flask_login import LoginManager, current_user
 
 # BLUEPRINTS
 # import blueprints
@@ -66,7 +67,9 @@ def internal_error(error):
 def internal_error(error):
     return render_template('errors/404.html'), 404
 
+
 from models import User
+
 login_manager = LoginManager()
 login_manager.login_view = 'users.login'
 login_manager.init_app(app)
@@ -79,3 +82,16 @@ def load_user(id):
 
 if __name__ == "__main__":
     app.run()
+
+
+def requires_roles(*roles):
+    def wrapper(f):
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            if current_user.role not in roles:
+                return render_template('errors/403.html')
+            return f(*args, **kwargs)
+
+        return wrapped
+
+    return wrapper

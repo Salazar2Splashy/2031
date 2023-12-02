@@ -5,7 +5,7 @@ from markupsafe import Markup
 from app import db
 from models import User
 from users.forms import RegisterForm, LoginForm
-from flask_login import login_user, logout_user
+from flask_login import login_user, logout_user, login_required, current_user
 
 # CONFIG
 users_blueprint = Blueprint('users', __name__, template_folder='templates')
@@ -76,8 +76,11 @@ def login():
             return render_template('users/login.html', form=form)
         login_user(user)
         session['authentication_attempts'] = 0
-        # sends user to index page
-        return redirect(url_for('index'))
+        if current_user.role == "admin":
+            return redirect(url_for('admin/admin'))
+
+        else:
+            return redirect(url_for('lottery/lottery'))
     else:
         flash_errors(form)
     # if request method is GET or form not valid re-render signup page
@@ -97,6 +100,7 @@ def setup_2fa():
 
 # view user account
 @users_blueprint.route('/account')
+@login_required
 def account():
     return render_template('users/account.html',
                            acc_no="PLACEHOLDER FOR USER ID",
@@ -113,6 +117,7 @@ def reset():
 
 
 @users_blueprint.route('/logout')
+@login_required
 def logout():
     logout_user()
     return redirect(url_for('index'))

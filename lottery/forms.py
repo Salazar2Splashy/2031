@@ -3,6 +3,7 @@ from wtforms import IntegerField, SubmitField
 
 
 class DrawForm(FlaskForm):
+
     number1 = IntegerField(id='no1')
     number2 = IntegerField(id='no2')
     number3 = IntegerField(id='no3')
