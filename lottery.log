@@ -1,0 +1,6 @@
+12/03/2023 07:33:27 PM : SECURITY - User registration [danielwalton88@gmail.com, 127.0.0.1]
+12/03/2023 07:36:18 PM : SECURITY - Log in [1, danielwalton88@gmail.com, 127.0.0.1]
+12/03/2023 07:38:59 PM : SECURITY - Log out [1, danielwalton88@gmail.com, 127.0.0.1]
+12/03/2023 07:39:20 PM : SECURITY - User registration [admin@email.com, 127.0.0.1]
+12/03/2023 07:40:03 PM : SECURITY - Invalid log in attempt [admin@email.com, 127.0.0.1]
+12/03/2023 07:40:17 PM : SECURITY - Log in [2, admin@email.com, 127.0.0.1]

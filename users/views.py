@@ -1,5 +1,8 @@
 # IMPORTS
-from flask import Blueprint, render_template, flash, redirect, url_for, session
+import logging
+from datetime import datetime
+
+from flask import Blueprint, render_template, flash, redirect, url_for, session, request
 from markupsafe import Markup
 
 from app import db
@@ -47,6 +50,8 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
+        logging.warning('SECURITY - User registration [%s, %s]', form.email.data, request.remote_addr)
+
         session["email"] = new_user.email
         session['authentication_attempts'] = 0
         # sends user to login page
@@ -59,28 +64,43 @@ def register():
 
 
 # view user login
-@users_blueprint.route('/login',methods=['GET', 'POST',])
+@users_blueprint.route('/login', methods=['GET', 'POST', ])
 def login():
     if not session.get('authentication_attempts'):
         session['authentication_attempts'] = 0
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first();
-        if not user or not user.verify_password(form.password.data) or not user.verify_pin(form.pin.data) or not user.verify_postcode(form.postcode.data):
+        if not user or not user.verify_password(form.password.data) or not user.verify_pin(
+                form.pin.data) or not user.verify_postcode(form.postcode.data):
+            logging.warning('SECURITY - Invalid log in attempt [%s, %s]',
+                            form.email.data,
+                            request.remote_addr
+                            )
             session['authentication_attempts'] += 1
             if session.get('authentication_attempts') >= 3:
                 flash(Markup('Number of incorrect login attempts exceeded. Please click <a href = "/reset" > here < / '
                              'a > to reset.'))
                 return render_template('users/login.html')
-            flash('Email address, password or pin is incorrect. {} login attempts remaining'.format(3 - session.get('authentication_attempts')), 'error')
+            flash('Email address, password or pin is incorrect. {} login attempts remaining'.format(
+                3 - session.get('authentication_attempts')), 'error')
             return render_template('users/login.html', form=form)
         login_user(user)
+        current_user.last_login = current_user.current_login
+        current_user.current_login = datetime.now()
         session['authentication_attempts'] = 0
+        db.session.commit()
+        logging.warning('SECURITY - Log in [%s, %s, %s]',
+                        current_user.id,
+                        current_user.email,
+                        request.remote_addr
+                        )
+        current_user.logins = current_user.logins + 1
         if current_user.role == "admin":
             return redirect(url_for('admin/admin'))
 
         else:
-            return redirect(url_for('lottery/lottery'))
+            return redirect(url_for('lottery.lottery'))
     else:
         flash_errors(form)
     # if request method is GET or form not valid re-render signup page
@@ -142,5 +162,10 @@ def reset():
 @users_blueprint.route('/logout')
 @login_required
 def logout():
+    logging.warning('SECURITY - Log out [%s, %s, %s]',
+                    current_user.id,
+                    current_user.email,
+                    request.remote_addr
+                    )
     logout_user()
     return redirect(url_for('index'))
