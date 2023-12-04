@@ -1,5 +1,7 @@
 from datetime import datetime
 
+import bcrypt
+
 from app import db, app
 from flask_login import UserMixin
 import pyotp
@@ -35,7 +37,7 @@ class User(db.Model, UserMixin):
         self.firstname = firstname
         self.lastname = lastname
         self.phone = phone
-        self.password = password
+        self.password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         self.role = role
         self.dob = dob
         self.postcode = postcode
@@ -54,7 +56,7 @@ class User(db.Model, UserMixin):
         return pyotp.TOTP(self.pin_key).verify(pin)
 
     def verify_password(self, password):
-        return self.password == password
+        return bcrypt.checkpw(password.encode('utf-8'), self.password)
 
     def verify_postcode(self, postcode):
         return self.postcode == postcode
